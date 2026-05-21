@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal, Signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { NavComponent } from "../layout/nav/nav.component";
 import { AccountService } from '../core/services/account.service';
@@ -9,12 +9,13 @@ import { User } from '../types/user';
 
 @Component({
   selector: 'app-root',
-  imports: [NavComponent, HomeComponent],
+  imports: [NavComponent, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
   protected accountService = inject(AccountService);
+  protected router = inject(Router);
   protected title = 'Dating App';
   private http = inject(HttpClient);
 

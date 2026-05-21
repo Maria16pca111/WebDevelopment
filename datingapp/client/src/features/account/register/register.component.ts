@@ -2,6 +2,7 @@ import { Component, output,inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RegisterCreds, User } from '../../../types/user';
 import { AccountService } from '../../../core/services/account.service';
+import { ToastServiceService } from '../../../core/services/toast-service.service';
 
 @Component({
   selector: 'app-register',
@@ -11,6 +12,7 @@ import { AccountService } from '../../../core/services/account.service';
 })
 export class RegisterComponent {
   private accountService = inject(AccountService);
+  private toast = inject(ToastServiceService);
   CancelRegister = output<boolean>();
   protected creds = {} as RegisterCreds;
 
@@ -21,9 +23,11 @@ export class RegisterComponent {
       {
         console.log(response);
         this.cancel();
+        this.toast.success('Registration successful');
       },
       error: error => {
         console.log(error);
+        this.toast.error('Registration failed');
       }
     }),
     console.log(this.creds);
@@ -34,6 +38,7 @@ export class RegisterComponent {
   {
     this.CancelRegister.emit(false);
     console.log('cancelled');
+    this.toast.info('Registration cancelled');
   }
 
 }
