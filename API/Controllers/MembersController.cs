@@ -8,6 +8,7 @@ namespace API.Controllers
     /// <summary>
     /// Controller for managing dating app members/users
     /// </summary>
+    [Authorize]
     public class MembersController(IMemberRepository memberRepository) : BaseApiController
     {
          
