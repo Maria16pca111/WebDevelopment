@@ -11,9 +11,9 @@ namespace datingapp.API.Data
     {
         private readonly AppDbContext _context = context;
 
-        public async Task<Member> GetMemberByIdAsync(string id)
+        public async Task<Member?> GetMemberByIdAsync(string id)
         {
-            return (await _context.Members.FindAsync(id))!;
+            return await _context.Members.FindAsync(id);
         }
 
         public async Task<IReadOnlyList<Member>> GetMembersAsync()
@@ -37,6 +37,13 @@ namespace datingapp.API.Data
         public async Task<bool> SaveAllAsync()
         {
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<Member?> GetMemberForUpdate(string id)
+        {
+            return await _context.Members
+            .Include(x => x.User)
+            .SingleOrDefaultAsync(x => x.Id == id);
         }
     }
 }
