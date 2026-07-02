@@ -1,6 +1,6 @@
 using System.Text;
 using API.Data;
-using API.Errors;
+using API.Entities;
 using datingapp.API.Data;
 using datingapp.API.Interface;
 using datingapp.API.Services;
@@ -8,8 +8,6 @@ using DatingApp.API.Interface;
 using DatingApp.API.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,7 +27,11 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+builder.Services.Configure<CloudinarySettings>(builder.Configuration
+.GetSection("CloudinarySettings"));
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(option =>
 {
