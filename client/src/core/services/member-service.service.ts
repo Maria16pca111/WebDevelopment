@@ -27,14 +27,24 @@ export class MemberServiceService {
     )
   }
 
-  getMemberPhotos(id: string)
-  {
-    return this.http.get<Photo[]>(this.baseUrl + 'members/' + id + '/photos')
+  getMemberPhotos(id: string){
+    return this.http.get<Photo[]>(this.baseUrl + 'members/' + id + '/photos')}
+
+  UpdateMember(member: EditableMember){
+    return this.http.put(this.baseUrl + 'members', member);}
+
+  uploadPhoto(file:File){
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<Photo>(this.baseUrl + 'members/add-photo', formData);
   }
 
-  UpdateMember(member: EditableMember)
-  {
-    return this.http.put(this.baseUrl + 'members', member);
+  setMainPhoto(photo: Photo){
+    return this.http.put(this.baseUrl + 'members/set-main-photo/' + photo.id, {});
+  }
+
+  deletePhoto(photoID: number){
+    return this.http.delete(this.baseUrl +'members/delete-photo/' + photoID)
   }
 
   /*private getHttpOptions() {
