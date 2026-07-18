@@ -30,7 +30,7 @@ export const routes: Routes = [
                 runGuardsAndResolvers: 'always',
                 component: MemberDetailedComponent,
                 children:[
-                    {path:'', redirectTo:'profile', pathMatch:'full'},
+                      {path:'', redirectTo:'profile', pathMatch:'full'},
                     {path:'profile', component: MemberProfileComponent, title:'Profile',
                         canDeactivate: [preventUnsavedChangesGuard]
 
