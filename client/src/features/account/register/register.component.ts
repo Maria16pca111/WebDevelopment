@@ -1,10 +1,11 @@
-import { Component, output,inject, OnInit } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { RegisterCreds, User } from '../../../types/user';
-import { AccountService } from '../../../core/services/account.service';
+import { Component, output,inject, signal } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { RegisterCreds } from '../../../types/user';
 import { ToastServiceService } from '../../../core/services/toast-service.service';
 import { JsonPipe } from '@angular/common';
 import { TextInputComponent } from "../../../shared/text-input/text-input.component";
+import { AccountService } from '../../../core/services/account.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -12,26 +13,35 @@ import { TextInputComponent } from "../../../shared/text-input/text-input.compon
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent implements OnInit{
+export class RegisterComponent{
   private toast = inject(ToastServiceService);
+  private router = inject(Router);
+  private accountService = inject(AccountService)
+  private fb = inject(FormBuilder);
   CancelRegister = output<boolean>();
   protected creds = {} as RegisterCreds;
-  protected registerForm: FormGroup = new FormGroup({});
+  protected credentialsForm: FormGroup;
+  protected profileForm : FormGroup;
+  protected currentStep = signal(1);
+  protected validationErrors = signal<string[]>([]);
 
-  ngOnInit(): void {
-    this.initializeForm();
-  }
-
-  initializeForm()
+  constructor()
   {
-    this.registerForm = new FormGroup({
-      email: new FormControl('', [Validators.required, Validators.email]),
-      displayName: new FormControl('', Validators.required),
-      password: new FormControl('', [Validators.required, Validators.minLength(4),Validators.maxLength(8)]),
-      confirmPassword: new FormControl('', [Validators.required, this.matchValues('password')])
+    this.credentialsForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      displayName: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(4),Validators.maxLength(8)]],
+      confirmPassword: ['', [Validators.required, this.matchValues('password')]]
     });
-    this.registerForm.controls['password'].valueChanges.subscribe(()=>{
-      this.registerForm.controls['confirmPassword'].updateValueAndValidity();
+    this.credentialsForm.controls['password'].valueChanges.subscribe(()=>{
+      this.credentialsForm.controls['confirmPassword'].updateValueAndValidity();
+    })
+
+    this.profileForm = this.fb.group({
+      gender: ['male', Validators.required],
+      dateOfBirth:['', Validators.required],
+      city:['', Validators.required],
+      country:['', Validators.required],
     })
   }
 
@@ -44,25 +54,46 @@ export class RegisterComponent implements OnInit{
       return control.value === matchValue ? null : {passwordMismatch: true};
     }
   }
+
+  nextStep()
+  {
+    if(this.credentialsForm.value)
+    {
+      this.currentStep.update(prevStep => prevStep + 1);
+    }
+  }
+
+  prevStep()
+  {
+    this.currentStep.update(prevStep => prevStep - 1);
+  }
+
+  getMaxDate()
+  {
+    const today = new Date();
+    today.setFullYear(today.getFullYear()-18);
+    return today.toISOString().split('T')[0];
+  }
+
   register()
   {
-    console.log(this.registerForm.value);
-    /*
-    this.accountService.register(this.creds).subscribe({
-      next: response =>
+    if(this.credentialsForm.valid && this.profileForm.valid)
+    {
+      const formData = {...this.credentialsForm.value, ...this.profileForm.value};
+      
+      this.accountService.register(formData).subscribe({
+      next: () =>
       {
-        console.log(response);
-        this.cancel();
+        this.router.navigateByUrl('/members');
         this.toast.success('Registration successful');
       },
       error: error => {
         console.log(error);
         this.toast.error('Registration failed');
+        this.validationErrors.set(error);
       }
-    }),
-    console.log(this.creds);
-    */
-    
+    })
+    }
   }
 
   cancel()
