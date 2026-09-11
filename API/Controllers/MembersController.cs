@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using API.DTOs;
 using API.Extensions;
+using API.Helpers;
 using datingapp.API.Entities;
 using DatingApp.API.Interface;
 using Microsoft.AspNetCore.Authorization;
@@ -18,9 +19,11 @@ namespace API.Controllers
     {
 
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<Member>>> GetMembers()
+        public async Task<ActionResult<IReadOnlyList<Member>>> GetMembers([FromQuery]
+        MemberParams memberParams)
         {
-            return Ok(await memberRepository.GetMembersAsync());
+            memberParams.CurrentMemberId = User.GetMemberId();
+            return Ok(await memberRepository.GetMembersAsync(memberParams));
         }
 
         [Authorize]

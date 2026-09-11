@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using datingapp.API.Entities;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using DatingApp.API.Interface;
+using API.Helpers;
 
 namespace datingapp.API.Data
 {
@@ -18,6 +20,8 @@ namespace datingapp.API.Data
 
         public async Task<IReadOnlyList<Member>> GetMembersAsync()
         {
+            var query = _context.Members.AsQueryable();
+            
             return await _context.Members.ToListAsync();
         }
 
@@ -45,6 +49,31 @@ namespace datingapp.API.Data
             .Include(x => x.User)
             .Include(x => x.Photos)
             .SingleOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<PaginatedResult<Member>> GetMembersAsync(MemberParams memberParams)
+        {
+            var query = _context.Members.AsQueryable();
+
+            query = query.Where((x => x.Id != memberParams.CurrentMemberId));
+
+            if (memberParams.Gender != null)
+            {
+                query = query.Where(x => x.Gender == memberParams.Gender);
+            }
+            
+            var minDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-memberParams.MaxAge - 1));
+            var maxDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-memberParams.MinAge));
+
+            query = query.Where(x => x.DateOfBrith >= minDob && x.DateOfBrith <= maxDob);
+
+            query = memberParams.OrderBy switch
+            {
+                "created" => query.OrderByDescending(x=> x.Created),
+                _ => query.OrderByDescending(x=> x.LastActive)
+            };
+            
+            return await PaginationHelper.CreateAsync(query, memberParams.PageNumber, memberParams.PageSize);
         }
     }
 }

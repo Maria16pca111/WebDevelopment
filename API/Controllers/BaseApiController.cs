@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [ApiController]
+    [ServiceFilter(typeof(LogUserrActivity))]
     [Route("api/[controller]")]
+    [ApiController]
     public class BaseApiController : ControllerBase
     {
+        
     }
 }

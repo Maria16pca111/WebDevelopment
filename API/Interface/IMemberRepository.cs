@@ -1,3 +1,4 @@
+using API.Helpers;
 using datingapp.API.Entities;
 
 namespace DatingApp.API.Interface
@@ -8,7 +9,7 @@ namespace DatingApp.API.Interface
 
         Task<bool> SaveAllAsync();
 
-        Task<IReadOnlyList<Member>> GetMembersAsync();
+        Task<PaginatedResult<Member>> GetMembersAsync(MemberParams memberParams);
 
         Task<Member?> GetMemberByIdAsync(string id);
 

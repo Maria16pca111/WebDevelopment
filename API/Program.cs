@@ -1,6 +1,7 @@
 using System.Text;
 using API.Data;
 using API.Entities;
+using API.Interface;
 using datingapp.API.Data;
 using datingapp.API.Interface;
 using datingapp.API.Services;
@@ -28,7 +29,9 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
-builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+builder.Services.AddScoped<IMemberRepository,MemberRepository>();
+builder.Services.AddScoped<ILikesRepository,LikesRepository>();
+builder.Services.AddScoped<LogUserrActivity>();
 builder.Services.Configure<CloudinarySettings>(builder.Configuration
 .GetSection("CloudinarySettings"));
 

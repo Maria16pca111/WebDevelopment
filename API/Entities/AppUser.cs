@@ -14,8 +14,6 @@ namespace datingapp.API.Entities
         public required byte[] PasswordSalt { get; set; }
         
         // Navigation property for the one-to-one profile relationship.
-
-        [ForeignKey(nameof(Id))]
         public Member Member { get; set; } = null!;
     }
 }

@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace datingapp.API.Entities;
@@ -19,8 +18,13 @@ public class Member
 
     [JsonIgnore]
     public List<Photo> Photos { get; set; } = [];
-    
+
     [JsonIgnore]
-    [ForeignKey(nameof(Id))]
+    public List<MemberLike> LikedByMembers {get; set;} = [];
+
+    [JsonIgnore]
+    public List<MemberLike> LikedMembers {get; set;} = [];
+
+    [JsonIgnore]
     public AppUser User { get; set; } = null!;
 }
