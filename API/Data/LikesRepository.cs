@@ -1,7 +1,10 @@
+using System.Runtime.CompilerServices;
 using API.Controllers;
+using API.Helpers;
 using API.Interface;
 using datingapp.API.Data;
 using datingapp.API.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;
 
@@ -9,31 +12,63 @@ public class LikesRepository(AppDbContext context) : ILikesRepository
 {
     public void AddLike(MemberLike like)
     {
-        
+        context.Likes.Add(like);
     }
 
     public void DeleteLike(MemberLike like)
     {
-        throw new NotImplementedException();
+        context.Likes.Remove(like);
     }
 
-    public Task<IReadOnlyList<string>> GetCurrentMemberLikeIds(string memberId)
+    public async Task<IReadOnlyList<string>> GetCurrentMemberLikeIds(string memberId)
     {
-        throw new NotImplementedException();
+        return await context.Likes
+            .Where(x=> x. SourceMemberId == memberId)
+            .Select(x=> x.TargetMemberId)
+            .ToListAsync();
     }
 
-    public Task<MemberLike> GetMemberLike(string sourceMemberId, string targetMemberId)
+    public async Task<MemberLike?> GetMemberLike(string sourceMemberId, string targetMemberId)
     {
-        throw new NotImplementedException();
+        return await context.Likes.FindAsync(sourceMemberId,targetMemberId);
     }
 
-    public Task<IReadOnlyList<Member>> GetMemberLikes(string predicate, string memberId)
+    public async Task<PaginatedResult<Member>> GetMemberLikes(LikesParams  likesParams)
     {
-        throw new NotImplementedException();
+        var query = context.Likes.AsQueryable();
+        IQueryable<Member> result;
+
+        switch (likesParams.Predicate)
+        {
+            case "liked":
+                result = query
+                    .Where(x => x.SourceMemberId == likesParams.MemberId)
+                    .Select(x => x.TargetMember);
+                break;
+            case "likedBy":
+                result = query
+                    .Where(x => x.TargetMemberId == likesParams.MemberId)
+                    .Select(x => x.SourceMember);
+                break;
+            default: //mutual
+                var likeIds = await GetCurrentMemberLikeIds(likesParams.MemberId);
+
+                result = query.Where(x => x.TargetMemberId == likesParams.MemberId
+                                          && likeIds.Contains(x.SourceMemberId))
+                    .Select(e => e.TargetMember);
+                break;
+            
+        }
+        return await PaginationHelper.CreateAsync(result, likesParams.PageNumber,likesParams.PageSize);
     }
 
-    public Task<bool> SaveAllChanges()
+    public async Task<bool> SaveAllChanges()
     {
-        throw new NotImplementedException();
+        return await NewMethod() > 0;
+    }
+
+    private Task<int> NewMethod()
+    {
+        return context.SaveChangesAsync();
     }
 }

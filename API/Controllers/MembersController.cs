@@ -42,6 +42,7 @@ namespace API.Controllers
         [HttpGet("{id}/photos")]
         public async Task<ActionResult<IReadOnlyList<Photo>>> GetMemberPhotos(string id)
         {
+            var result = User.GetMemberId();
             return Ok(await memberRepository.GetPhotosForMemberAsync(id));
         }
 
