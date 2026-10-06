@@ -22,6 +22,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", x => x.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200", "http://localhost:4200"));
@@ -31,6 +32,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<IMemberRepository,MemberRepository>();
 builder.Services.AddScoped<ILikesRepository,LikesRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<LogUserrActivity>();
 builder.Services.Configure<CloudinarySettings>(builder.Configuration
 .GetSection("CloudinarySettings"));

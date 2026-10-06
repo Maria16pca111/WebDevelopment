@@ -40,17 +40,8 @@ export class ListsComponent implements OnInit{
   loadLikes()
   {
     this.likeService.getLikes(this.predicate,this.pageNumber,this.pageSize).subscribe({
-      next: response => this.paginatedResult.set({
-        items: response,
-        metaData: {
-          currentPage: this.pageNumber,
-          totalPages: 1,
-          pageSize: this.pageSize,
-          totalCount: response.length
-        }
-      })
-      
-    })
+      next: result => this.paginatedResult.set(result)
+    });
   }
 
   onPageChange(event: {currentPage: number, pageSize: number})

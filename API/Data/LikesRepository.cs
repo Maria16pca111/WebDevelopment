@@ -55,7 +55,7 @@ public class LikesRepository(AppDbContext context) : ILikesRepository
 
                 result = query.Where(x => x.TargetMemberId == likesParams.MemberId
                                           && likeIds.Contains(x.SourceMemberId))
-                    .Select(e => e.TargetMember);
+                    .Select(e => e.SourceMember);
                 break;
             
         }
