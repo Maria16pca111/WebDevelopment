@@ -3,6 +3,8 @@ using System.Text.Json;
 using API.DTOs;
 using datingapp.API.Data;
 using datingapp.API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Data
@@ -14,9 +16,9 @@ namespace API.Data
             // Static initialization logic goes here.
         }
 
-        public static async Task SeedUsers(AppDbContext context)
+        public static async Task SeedUsers(UserManager<AppUser> userManager)
         {
-            if(await context.Users.AnyAsync())
+            if (await userManager.Users.AnyAsync())
             {
                 return; // Database has already been seeded with users, so we can exit early.
             }
@@ -29,17 +31,19 @@ namespace API.Data
                 return; // No valid user data found in the JSON file, so we can exit early.
             }
 
-            foreach(var member in members)
+            foreach (var member in members)
             {
-                using var hmac = new System.Security.Cryptography.HMACSHA512();
+                //using var hmac = new System.Security.Cryptography.HMACSHA512();
                 var user = new AppUser
                 {
                     Id = member.Id,
                     Email = member.Email,
+                    UserName = member.Email,
                     DisplayName = member.DisplayName,
                     ImageUrl = member.ImageUrl,
-                    PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes("Pa$$w0rd")), 
-                    PasswordSalt = hmac.Key,
+
+                    //PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes("Pa$$w0rd")), 
+                    //PasswordSalt = hmac.Key,
                     Member = new Member
                     {
                         Id = member.Id,
@@ -55,18 +59,38 @@ namespace API.Data
                         Email = member.Email
                     }
                 };
-                
+
                 user.Member.Photos.Add(new Photo
                 {
                     Url = member.ImageUrl!,
                     MemberId = member.Id
                 });
 
-                context.Users.Add(user);
+                //context.Users.Add(user);
+
+
+                //await context.SaveChangesAsync(); // Save all changes to the database after processing all users.
+
+                var result = await userManager.CreateAsync(user, "Pa$$w0rd");
+
+                if (!result.Succeeded)
+                    Console.Write(result.Errors.First().Description);
+
+                await userManager.AddToRoleAsync(user, "Member");
+
+                // Call this method to trigger any seed logic if needed.
+
             }
 
-            await context.SaveChangesAsync(); // Save all changes to the database after processing all users.
-            // Call this method to trigger any seed logic if needed.
+            var admin = new AppUser
+            {
+                UserName = "admin@test.com",
+                Email = "admin@test.com",
+                DisplayName = "Admin"
+            };
+
+            await userManager.CreateAsync(admin, "Pa$$w0rd");
+            await userManager.AddToRolesAsync(admin,["Admin","Moderator"]);
         }
     }
 }

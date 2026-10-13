@@ -1,15 +1,18 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 using datingapp.API.Entities;
 using datingapp.API.Interface;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.IdentityModel.Tokens;
 
 namespace datingapp.API.Services
 {
-    public class TokenService(IConfiguration config) : ITokenService
+    public class TokenService(IConfiguration config, UserManager<AppUser> userManager) : ITokenService
     {
 
-        public string CreateToken(AppUser user)
+        public async Task<string> CreateToken(AppUser user)
         {
             //getting the token key from appsettings
 
@@ -28,9 +31,13 @@ namespace datingapp.API.Services
 
             var claims = new List<Claim>
             {
-                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Email, user.Email!),
                 new(ClaimTypes.NameIdentifier, user.Id)
             };
+
+            var roles = await userManager.GetRolesAsync(user);
+
+            claims.AddRange(roles.Select(roles=> new Claim(ClaimTypes.Role, roles)));
 
             //Signing credentials
 
@@ -39,13 +46,19 @@ namespace datingapp.API.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(7),
+                Expires = DateTime.Now.AddMinutes(7),
                 SigningCredentials = creds
             };
 
             var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var securityToken = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(securityToken);
+        }
+
+        public string GenerateRefreshToken()
+        {
+            var randomBytes = RandomNumberGenerator.GetBytes(64);
+            return Convert.ToBase64String(randomBytes);
         }
     }
 }

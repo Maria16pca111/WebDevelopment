@@ -34,8 +34,8 @@ namespace API.Controllers
 
             messageRepository.AddMessage(message);
 
-            if(await messageRepository.SaveAllAsync());
-            return message.ToDto();
+            if(await messageRepository.SaveAllAsync())
+                return message.ToDto();
 
             return BadRequest("Failed to send message");
         }
